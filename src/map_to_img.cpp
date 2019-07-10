@@ -11,9 +11,11 @@
 #include <Eigen/Geometry>
 #include <sensor_msgs/image_encodings.h>
 #include <hector_map_tools/HectorMapTools.h>
+#include <std_msgs/Int16.h>
 
 using namespace std;
 
+int map_scale = 50;
 /**
  * @brief This node provides occupancy grid maps as images via image_transport, so the transmission consumes less bandwidth.
  * The provided code is a incomplete proof of concept.
@@ -136,7 +138,7 @@ cv::Mat *map_mat;
 
       Eigen::Vector2i rob_position_mapi (rob_position_map.cast<int>());
 
-      Eigen::Vector2i tile_size_lower_halfi (p_size_tiled_map_image_x_ / 2, p_size_tiled_map_image_y_ / 2);
+      Eigen::Vector2i tile_size_lower_halfi (p_size_tiled_map_image_x_*map_scale/100, p_size_tiled_map_image_y_*map_scale/100);
 
       Eigen::Vector2i min_coords_map (rob_position_mapi - tile_size_lower_halfi);
 
@@ -149,7 +151,7 @@ cv::Mat *map_mat;
         min_coords_map[1] = 0;
       }
 
-      Eigen::Vector2i max_coords_map (min_coords_map + Eigen::Vector2i(p_size_tiled_map_image_x_,p_size_tiled_map_image_y_));
+      Eigen::Vector2i max_coords_map (min_coords_map + Eigen::Vector2i(p_size_tiled_map_image_x_*map_scale/50,p_size_tiled_map_image_y_*map_scale/50));
 
       //Clamp to upper map coords
       if (max_coords_map[0] > size_x){
@@ -246,16 +248,24 @@ cv::Mat *map_mat;
 
 };
 
+void task_callback(const std_msgs::Int16 &scale)
+{
+  map_scale = scale.data;
+}
+
 int main(int argc, char** argv)
 {   
   ros::init(argc, argv, "map_to_image_node");
   ros::NodeHandle pn("~");
   ros::NodeHandle n("~");
+  //void task_callback();
   ros::Rate loop_rate(5); 
+  ros::Subscriber map_zoom_sub = n.subscribe("/map_zoom", 1, task_callback);
   MapAsImageProvider map_image_provider;
 
   while (ros::ok())
-   {  
+   { 
+      ROS_INFO("Scale %d", map_scale);
       map_image_provider.additionalPublisher();
       ros::spinOnce();
       loop_rate.sleep();
