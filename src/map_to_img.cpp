@@ -70,14 +70,12 @@ nav_msgs::OccupancyGrid mapInstance;
   { 
     image_transport_publisher_full_.publish(cv_img_full_.toImageMsg());
     image_transport_publisher_tile_.publish(cv_img_tile_.toImageMsg());
-    //ROS_INFO("test.");
   }
 
   //We assume the robot position is available as a PoseStamped here (querying tf would be the more general option)
   void poseUpdate(const geometry_msgs::PoseStampedConstPtr& pose)
   { 
     pose_ptr_ = pose;
-    ROS_INFO("New pose received.");
     publishMaps();
   }
 
@@ -237,7 +235,6 @@ nav_msgs::OccupancyGrid mapInstance;
       }
       image_transport_publisher_full_.publish(cv_img_full_.toImageMsg());
       image_transport_publisher_tile_.publish(cv_img_tile_.toImageMsg());
-      // ROS_INFO("New map received.");
     }
   }
 
@@ -282,8 +279,6 @@ int main(int argc, char** argv)
 
   while (ros::ok())
    { 
-      // ROS_INFO("Scale %d", map_scale);
-      // map_image_provider.additionalPublisher();
       ros::spinOnce();
       loop_rate.sleep();
    }
