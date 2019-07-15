@@ -21,4 +21,8 @@ target_link_libraries(map_to_img
   ${OpenCV_LIBRARIES}
 )
 
+add_executable(dummy_pose_publisher src/dummy_pose_publisher.cpp)
 
+target_link_libraries(dummy_pose_publisher
+  ${catkin_LIBRARIES}
+)
