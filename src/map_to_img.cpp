@@ -24,6 +24,13 @@ class MapAsImageProvider
 {
 public:
 cv::Mat *map_mat;
+int size_x = 256;
+int size_y = 256;
+
+std::vector<int8_t> map_data;
+
+nav_msgs::OccupancyGrid mapInstance;
+
   MapAsImageProvider()
     : pn_("~")
   {
@@ -71,16 +78,21 @@ cv::Mat *map_mat;
   { 
     pose_ptr_ = pose;
     ROS_INFO("New pose received.");
+    publishMaps();
   }
 
   //The map->image conversion runs every time a new map is received at the moment
   void mapUpdate(const nav_msgs::OccupancyGridConstPtr& map)
   { 
-    int size_x = map->info.width;
-    int size_y = map->info.height;
+    mapInstance.header = map->header;
+    mapInstance.info = map->info;
+    mapInstance.data = map->data;
+    ROS_INFO("Received map");
+    size_x = map->info.width;
+    size_y = map->info.height;
 
     if ((size_x < 3) || (size_y < 3) ){
-      ROS_INFO("Map size is only x: %d,  y: %d . Not running map to image conversion", size_x, size_y);
+      ROS_WARN("Map size is only x: %d,  y: %d . Not running map to image conversion", size_x, size_y);
       return;
     }
 
@@ -92,8 +104,12 @@ cv::Mat *map_mat;
         *map_mat = cv::Mat(size_y, size_x, CV_8U);
       }
 
-      const std::vector<int8_t>& map_data (map->data);
+      map_data =  map->data;
 
+  }
+
+
+  void publishMaps(){
       unsigned char *map_mat_data_p=(unsigned char*) map_mat->data;
 
       //We have to flip around the y axis, y for image starts at the top and y for map at the bottom
@@ -125,13 +141,12 @@ cv::Mat *map_mat;
             break;
           }
         }
-      image_transport_publisher_full_.publish(cv_img_full_.toImageMsg());
     }
 
     // Only if someone is subscribed to it, do work and publish tile-based map image Also check if pose_ptr_ is valid
-    if ((image_transport_publisher_tile_.getNumSubscribers() > 0) && (pose_ptr_)){
+    if (pose_ptr_){
 
-      world_map_transformer_.setTransforms(*map);
+      world_map_transformer_.setTransforms(mapInstance);
 
       Eigen::Vector2f rob_position_world (pose_ptr_->pose.position.x, pose_ptr_->pose.position.y);
       Eigen::Vector2f rob_position_map (world_map_transformer_.getC2Coords(rob_position_world));
@@ -188,7 +203,7 @@ cv::Mat *map_mat;
         *map_mat = cv::Mat(actual_map_dimensions[0], actual_map_dimensions[1], CV_8U);
       }
 
-      const std::vector<int8_t>& map_data (map->data);
+      const std::vector<int8_t>& map_data (mapInstance.data);
 
       unsigned char *map_mat_data_p=(unsigned char*) map_mat->data;
 
@@ -220,8 +235,9 @@ cv::Mat *map_mat;
           }
         }        
       }
+      image_transport_publisher_full_.publish(cv_img_full_.toImageMsg());
       image_transport_publisher_tile_.publish(cv_img_tile_.toImageMsg());
-      ROS_INFO("New map received.");
+      // ROS_INFO("New map received.");
     }
   }
 
@@ -259,14 +275,15 @@ int main(int argc, char** argv)
   ros::NodeHandle pn("~");
   ros::NodeHandle n("~");
   //void task_callback();
-  ros::Rate loop_rate(5); 
+  ros::Rate loop_rate(50); 
   ros::Subscriber map_zoom_sub = n.subscribe("/map_zoom", 1, task_callback);
+  ROS_INFO("Init MapAsImageProvider object");
   MapAsImageProvider map_image_provider;
 
   while (ros::ok())
    { 
-      ROS_INFO("Scale %d", map_scale);
-      map_image_provider.additionalPublisher();
+      // ROS_INFO("Scale %d", map_scale);
+      // map_image_provider.additionalPublisher();
       ros::spinOnce();
       loop_rate.sleep();
    }
