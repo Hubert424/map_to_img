@@ -1,0 +1,18 @@
+<launch>
+
+    <node pkg="map_server" type="map_server" name="map_server" args="$(find map_to_img)/maps/map.yaml"/>
+
+    <node pkg="map_to_img" type="map_to_img" name="map_to_img" output="screen"/>
+
+    <node pkg="map_to_img" type="dummy_pose_publisher" name="dummy_pose_publisher" output="screen"/>
+
+    <node pkg="web_video_server" type="web_video_server" name="webvideo4">
+        <param name="address" value="::" />
+        <param name="port" value="8082" />
+    </node>
+
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="port" value="9090"/>
+    </include>
+
+</launch>
