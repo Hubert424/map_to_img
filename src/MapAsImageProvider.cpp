@@ -13,7 +13,7 @@ MapAsImageProvider::MapAsImageProvider(ros::NodeHandle nh, uint16_t tile_width, 
 
     cv_img_full_.header.frame_id = "map_image";
     cv_img_full_.encoding = sensor_msgs::image_encodings::MONO8;
-    cv_img_full_.image = cv::Mat(INITIAL_MAP_SIZE_X, INITIAL_MAP_SIZE_Y, CV_8U, 127);
+    cv_img_full_.image = cv::Mat(INITIAL_MAP_SIZE_Y, INITIAL_MAP_SIZE_X, CV_8U, 127);
     lastMapUpdate = ros::Time::now();
     fullMapDelay = ros::Duration(INITIAL_FULL_MAP_DELAY);
     lastTileUpdate = ros::Time::now();
@@ -21,7 +21,7 @@ MapAsImageProvider::MapAsImageProvider(ros::NodeHandle nh, uint16_t tile_width, 
 
     cv_img_tile_.header.frame_id = "map_image";
     cv_img_tile_.encoding = sensor_msgs::image_encodings::MONO8;
-    cv_img_tile_.image = cv::Mat(tile_width, tile_height, CV_8U, 127);
+    cv_img_tile_.image = cv::Mat(tile_height, tile_width, CV_8U, 127);
 
     map_scale = DEFAULT_MAP_SCALE;
 
