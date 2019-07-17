@@ -6,6 +6,14 @@
 
     <node pkg="map_to_img" type="dummy_pose_publisher" name="dummy_pose_publisher" output="screen"/>
 
+    <node pkg="image_view" type="image_view" name="image_view_full">
+        <remap from="image" to="/map_image/full"/>
+    </node>
+
+    <node pkg="image_view" type="image_view" name="image_view_tile">
+        <remap from="image" to="/map_image/tile"/>
+    </node>
+
     <node pkg="web_video_server" type="web_video_server" name="webvideo4">
         <param name="address" value="::" />
         <param name="port" value="8082" />
@@ -14,5 +22,7 @@
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
         <arg name="port" value="9090"/>
     </include>
+
+    <node pkg="rviz" type="rviz" name="rviz" args=" -d $(find map_to_img)/rviz/test.rviz" required="true"/>
 
 </launch>
