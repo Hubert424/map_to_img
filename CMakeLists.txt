@@ -10,11 +10,12 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 )
 
+include_directories(include)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-add_executable(map_to_img src/map_to_img.cpp)
+add_executable(map_to_img src/map_to_img.cpp src/MapAsImageProvider.cpp)
 
 target_link_libraries(map_to_img
   ${catkin_LIBRARIES}
