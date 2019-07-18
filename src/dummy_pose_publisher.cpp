@@ -1,6 +1,7 @@
 #include <math.h>
 #include "ros/ros.h"
 #include <geometry_msgs/PoseStamped.h>
+#include <tf/transform_broadcaster.h>
 
 int main(int argc, char **argv)
 {
@@ -18,6 +19,9 @@ int main(int argc, char **argv)
     ros::Publisher pose_publisher = n.advertise<geometry_msgs::PoseStamped>("/pose", 1);
     ros::Rate loop_rate(50);
 
+    static tf::TransformBroadcaster br;
+    tf::Transform transform;
+
     while (ros::ok())
     {
         if (counter == 628)
@@ -28,6 +32,12 @@ int main(int argc, char **argv)
         pose.pose.position.x = sin(((float)counter)/100);
         pose.pose.position.y = cos(((float)counter)/100);
         pose_publisher.publish(pose);
+
+        transform.setOrigin(tf::Vector3(pose.pose.position.x, pose.pose.position.y, 0.0));
+        tf::Quaternion q(0, 0, 0, 1);
+        transform.setRotation(q);
+        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "base_link"));
+
         ros::spinOnce();
         loop_rate.sleep();
         counter++;

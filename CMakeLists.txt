@@ -3,7 +3,7 @@ project(map_to_img)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS cv_bridge geometry_msgs hector_map_tools image_transport nav_msgs sensor_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp cv_bridge geometry_msgs hector_map_tools image_transport nav_msgs sensor_msgs tf)
 find_package(Eigen3)
 find_package(OpenCV REQUIRED)
 
