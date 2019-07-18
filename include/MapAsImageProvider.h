@@ -39,6 +39,7 @@ private:
     ros::Time lastTileUpdate;
     ros::Duration mapTileDelay;
 
+    int spacing;
     float map_scale;
 
     void poseUpdate(const geometry_msgs::PoseStampedConstPtr &pose);

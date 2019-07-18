@@ -23,7 +23,7 @@ MapAsImageProvider::MapAsImageProvider(ros::NodeHandle nh, uint16_t tile_width, 
     cv_img_tile_.encoding = sensor_msgs::image_encodings::MONO8;
     cv_img_tile_.image = cv::Mat(tile_height, tile_width, CV_8U, 127);
 
-    map_scale = DEFAULT_MAP_SCALE;
+    setScale(DEFAULT_MAP_SCALE);
 
     ROS_INFO("Map to Image node started.");
 }
@@ -37,6 +37,7 @@ void MapAsImageProvider::setScale(float scale)
 {
     ROS_INFO("New scale is %f", scale);
     map_scale = scale;
+    spacing = (int)round(map_scale / currentMap.info.resolution);
 }
 
 void MapAsImageProvider::publishFullMap(bool force)
@@ -143,9 +144,32 @@ void MapAsImageProvider::tileUpdate()
             for (int y = 0; y < cv_img_tile_.image.rows; y++)
             {
                 int idx = (cv_img_tile_.image.rows - y) * cv_img_tile_.image.cols + x;
-                switch (getCellOccupancy(
-                    pose_ptr_->pose.position.x + ((x - cv_img_tile_.image.cols / 2) * map_scale),
-                    pose_ptr_->pose.position.y + ((y - cv_img_tile_.image.rows / 2) * map_scale)))
+                if (map_scale > currentMap.info.resolution)
+                {
+                    int tmpPoint;
+                    currentPoint = -1;
+                    for (int dx = 0; dx < spacing; dx++)
+                    {
+                        for (int dy = 0; dy < spacing; dy++)
+                        {
+
+                            tmpPoint = getCellOccupancy(
+                                pose_ptr_->pose.position.x + ((x - cv_img_tile_.image.cols / 2) * map_scale + dx * currentMap.info.resolution),
+                                pose_ptr_->pose.position.y + ((y - cv_img_tile_.image.rows / 2) * map_scale + dy * currentMap.info.resolution));
+                            if (tmpPoint > currentPoint)
+                            {
+                                currentPoint = tmpPoint;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    currentPoint = getCellOccupancy(
+                        pose_ptr_->pose.position.x + ((x - cv_img_tile_.image.cols / 2) * map_scale),
+                        pose_ptr_->pose.position.y + ((y - cv_img_tile_.image.rows / 2) * map_scale));
+                }
+                switch (currentPoint)
                 {
                 case -1:
                     cv_img_tile_.image.data[idx] = 127;
