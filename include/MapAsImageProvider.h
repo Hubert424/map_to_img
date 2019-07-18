@@ -31,9 +31,6 @@ private:
     cv_bridge::CvImage cv_img_full_;
     cv_bridge::CvImage cv_img_tile_;
 
-    ros::Subscriber pose_sub_;
-    geometry_msgs::PoseStampedConstPtr pose_ptr_;
-
     ros::Time lastMapUpdate;
     ros::Duration fullMapDelay;
     ros::Time lastTileUpdate;
@@ -41,6 +38,9 @@ private:
 
     int spacing;
     float map_scale;
+
+    float robot_position_x;
+    float robot_position_y;
 
     void poseUpdate(const geometry_msgs::PoseStampedConstPtr &pose);
     void mapUpdate(const nav_msgs::OccupancyGridConstPtr &map);
@@ -53,6 +53,7 @@ public:
     void publishFullMap(bool force = false);
     void publishMapTile(bool force = false);
     void setScale(float scale = DEFAULT_MAP_SCALE);
+    void updateRobotPosition(float x, float y);
 };
 
 #endif
